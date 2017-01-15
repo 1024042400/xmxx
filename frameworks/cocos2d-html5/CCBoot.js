@@ -739,7 +739,6 @@ cc.loader = (function () {
                     jsLoadingImg.src = cc._loadingImage;
 
                 var canvasNode = d.getElementById(cc.game.config["id"]);
-                // TODO
                 canvasNode.style.backgroundColor = "transparent";
                 canvasNode.parentNode.appendChild(jsLoadingImg);
 

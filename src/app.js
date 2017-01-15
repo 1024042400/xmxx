@@ -7,11 +7,12 @@ var MainLayer = cc.Layer.extend({
     selected:[],// 选中的元素
     visited : [],
     score : 0,
-    scoreLabel  : new cc.LabelTTF('',"Arial",38),
-    selectLabel : new cc.LabelTTF('',"Arial",38),
+    scoreLabel  : '',
+    selectLabel : '',
     //particle    : new cc.ParticleSystem(res.Particle), // 粒子效果
     ctor:function () {
         this._super();
+        /*
         var system = {
             win: false,
             mac: false,
@@ -25,17 +26,20 @@ var MainLayer = cc.Layer.extend({
         system.x11 = (p == "X11") || (p.indexOf("Linux") == 0);
         system.ipad = (navigator.userAgent.match(/iPad/i) != null)?true:false;
 
-        alert(navigator.platform);
+        //alert(navigator.platform);
         if(system.win || system.mac){
             //alert('ok');
         }else{
 
-        }
+        }*/
+
+
         //1.加载背景
         this.loadBackground();
         //2.初始化数据
         this.init_data();
         this.createBody();
+
         return true;
     },
     // 加载背景
@@ -92,12 +96,7 @@ var MainLayer = cc.Layer.extend({
             this.cells[i] = arr;
         }
 
-        this.scoreLabel.x = size.width/2;
-        this.scoreLabel.y = size.height - size.height/10;
-        this.addChild(this.scoreLabel);
-        this.selectLabel.x = size.width/2;
-        this.selectLabel.y = 680;
-        this.addChild(this.selectLabel);
+
     },
     // 寻找
     click : function(pos){
@@ -150,13 +149,14 @@ var MainLayer = cc.Layer.extend({
                 if(!(cc.rectContainsPoint(rect,posInNode))){
                     return false;
                 }
+
                 var p = target.parent.parent.parent;
                 if(p.selected.length == 0){
                     p.click(target.pos);
                     p.jump();
                 }else{
                     //判定
-                    if(p.selected.includes(target.pos)){
+                    if(p.selected.indexOf(target.pos) != -1){
                         p.score += p.selected.length * p.selected.length * 5;
                         p.scoreLabel.setString('当前得分'+p.score);
                         for(var i=0;i<p.selected.length;i++) {
@@ -209,6 +209,15 @@ var MainLayer = cc.Layer.extend({
         this.cells = [];
         this.selected = [];
         this.score = 0;
+        this.scoreLabel = new cc.LabelTTF('',"Arial",38);
+        this.selectLabel = new cc.LabelTTF('',"Arial",38);
+        var size = cc.winSize;
+        this.scoreLabel.x = size.width/2;
+        this.scoreLabel.y = size.height - size.height/10;
+        this.addChild(this.scoreLabel);
+        this.selectLabel.x = size.width/2;
+        this.selectLabel.y = 680;
+        this.addChild(this.selectLabel);
     },
     reset_visited : function () {
         for(var i=0;i<10;i++){
