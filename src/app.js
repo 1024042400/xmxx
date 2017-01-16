@@ -47,6 +47,7 @@ var MainLayer = cc.Layer.extend({
         var bg = new cc.Sprite(res.Bg);
         this.addChild(bg);
         bg.setPosition(cc.winSize.width / 2,cc.winSize.height / 2);
+
     },
     createBody : function(){
         var size = cc.winSize;
@@ -62,8 +63,10 @@ var MainLayer = cc.Layer.extend({
          tex.initWithData(buffer, cc.Texture2D.PIXEL_FORMAT_RGBA8888, 1, 1, size);
          body.texture = tex;*/
 
-        body.setTextureRect(cc.rect(0,0,size.width,size.width));
-        body.setPosition(size.width /2, size.width /2);
+        //body.setTextureRect(cc.rect(0,0,size.width,size.width));
+        body.setTextureRect(cc.rect(0,0,0,0));
+        //body.setPosition(size.width /2, size.width /2);
+        //body.setLocalZOrder(1);
         // body.setAnchorPoint.call(this,0.5,0.5)
         this.addChild(body);
         // 1.将纹理加载到内存
@@ -110,7 +113,7 @@ var MainLayer = cc.Layer.extend({
         } else {
             this.replace_sprites(); // 替换图片
             this.selectLabel.setString(this.selected.length+'连消'+5*this.selected.length*this.selected.length+'分');
-            cc.audioEngine.playMusic(res.Select);
+            if(cc.loader.getRes(res.Select)) {cc.audioEngine.playMusic(res.Select,false);}
         }
         //console.log('selected:'+this.selected);
     },
@@ -173,7 +176,7 @@ var MainLayer = cc.Layer.extend({
                         }
                         p.drop_down();
                         p.move_left();
-                        cc.audioEngine.playMusic(res.Pop);
+                        cc.audioEngine.playMusic(res.Pop,false);
 
 
                         p.is_over();
@@ -323,7 +326,7 @@ var MainLayer = cc.Layer.extend({
         label2.x = cc.winSize.width/2;
         label2.y = 440;
         this.addChild(label2);
-        cc.audioEngine.playMusic(res.Passed);
+        //cc.audioEngine.playMusic(res.Passed,false);
     },
     print : function () { // 测试使用,打印星星阵列
         for(var i=0;i<10;i++){
