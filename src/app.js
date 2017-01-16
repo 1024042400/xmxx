@@ -33,7 +33,6 @@ var MainLayer = cc.Layer.extend({
 
         }*/
 
-
         //1.加载背景
         this.loadBackground();
         //2.初始化数据
@@ -168,11 +167,12 @@ var MainLayer = cc.Layer.extend({
                             cell.removeFromParent(true);
                             p.cells[parseInt((pos - 1) / 10)][(pos - 1) % 10] = 0;
 
-                            var particle = new cc.ParticleSystem(res.Particle); // 粒子效果
-                            //var particle = p.particle.clone();
-                            particle.setPosition(cc.p(32 + parseInt((pos - 1) % 10)*64,640-32 - parseInt((pos - 1)/10)*64));
-                            p.addChild(particle);
-
+                            if(!cc.sys.isMobile) {
+                                var particle = new cc.ParticleSystem(res.Particle); // 粒子效果
+                                //var particle = p.particle.clone();
+                                particle.setPosition(cc.p(32 + parseInt((pos - 1) % 10) * 64, 640 - 32 - parseInt((pos - 1) / 10) * 64));
+                                p.addChild(particle);
+                            }
                         }
                         p.drop_down();
                         p.move_left();
