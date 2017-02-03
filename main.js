@@ -71,9 +71,12 @@ cc.game.onStart = function(){
     // The game will be resized when browser size change
     cc.view.resizeWithBrowserSize(true);
 
+
     //load resources
     cc.LoaderScene.preload(g_resources, function () {
-        cc.director.runScene(new MainScene());
+        cc.spriteFrameCache.addSpriteFrames(res.PkPlist,cc.textureCache.addImage(res.PkPng));
+        cc.spriteFrameCache.addSpriteFrames(res.NewActsPlist, cc.textureCache.addImage(res.NewActsPng));
+        cc.director.runScene(new HallScene());
     }, this);
 };
 cc.game.run();

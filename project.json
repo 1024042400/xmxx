@@ -4,7 +4,7 @@
     "debugMode" : 1,
     "showFPS" : false,
     "frameRate" : 60,
-    "noCache" : false,
+    "noCache" : true,
     "id" : "gameCanvas",
     "renderMode" : 0,
     "engineDir":"frameworks/cocos2d-html5",
@@ -13,6 +13,17 @@
 
     "jsList" : [
         "src/resource.js",
-        "src/app.js"
+        "src/app.js",
+
+        "src/scene/hall_scene.js",
+        "src/scene/single_scene.js",
+        "src/scene/pk_scene.js",
+
+        "src/tools/diy_method.js",
+        "src/tools/time_count.js",
+        "src/tools/xxtea.js",
+        "src/xmxx.js",
+
+        "src/static_classes.js"
     ]
 }
