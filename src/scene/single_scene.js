@@ -6,19 +6,13 @@
  */
 var MainLayer = cc.Layer.extend({
     _className: 'MainLayer',
-    scoreLabel: '', // 分数标签
+    scoreLabel: null, // 分数标签
     xmxx: null,
     music_button: null, // 音乐图标
+    level : null,
+    levelLabel : null,
     ctor: function () {
         this._super();
-        var data = new Array(10);
-        for (var i = 0; i < 10; i++) {
-            var d = new Array(10);
-            for (var j = 0; j < 10; j++) {
-                d[j] = Math.ceil(Math.random() * 4) + 1;
-            }
-            data[i] = d;
-        }
 
         // 返回图标
         var return_button = new cc.Sprite("#button_back.png");
@@ -40,22 +34,29 @@ var MainLayer = cc.Layer.extend({
         this.music_button = m_button;
         this.addChild(m_button);
 
-        this.xmxx = new XmxxGame(this, res.Bg, data);
+        var size = cc.winSize;
+        this.level = 1;
+        this.levelLabel = new cc.LabelTTF('第'+this.level + '关', "Arial", 38);
+        this.levelLabel.x = size.width / 2;
+        this.levelLabel.y = size.height - size.height / 10 + 50;
+        this.addChild(this.levelLabel);
+        this.xmxx = new XmxxGame(this, res.Bg, undefined);
         return true;
     },
     sub_init_data: function () {
         var size = cc.winSize;
-
-        this.scoreLabel = new cc.LabelTTF('', "Arial", 38);
-
-        this.scoreLabel.x = size.width / 2;
-        this.scoreLabel.y = size.height - size.height / 10;
-        this.addChild(this.scoreLabel);
+        if(this.scoreLabel == null){
+            this.scoreLabel = new cc.LabelTTF('', "Arial", 38);
+            this.scoreLabel.x = size.width / 2;
+            this.scoreLabel.y = size.height - size.height / 10;
+            this.addChild(this.scoreLabel);
+        }
     },
     after_remove: function () {
         this.scoreLabel.setString('当前得分' + this.xmxx.score);
     },
     deal_with_over: function (left_score, count, score) {
+        /*
         var label1 = new cc.LabelTTF("奖励" + left_score, "Arial", 40);
         label1.x = cc.winSize.width / 2;
         label1.y = 480;
@@ -64,8 +65,23 @@ var MainLayer = cc.Layer.extend({
         var label2 = new cc.LabelTTF("剩余" + count + "个星星", "Arial", 40);
         label2.x = cc.winSize.width / 2;
         label2.y = 440;
-        this.addChild(label2);
+        this.addChild(label2);*/
         this.scoreLabel.setString('当前得分' + score);
+        this.xmxx.all_blink();
+    },
+    next_level :function () { // 开始下一关
+        this.level += 1;
+        this.levelLabel.setString('第'+this.level + '关');
+        this.scoreLabel.setString('当前得分' + 0);
+        this.xmxx.selectLabel.setString('');
+        this.xmxx.leftLabel.removeFromParent(true);
+        this.xmxx.awardLabel.removeFromParent(true);
+        this.xmxx.body.removeFromParent(true);
+        var callFunc = cc.callFunc(function () {
+            this.xmxx.init_data(undefined);
+            this.xmxx.createBody();
+        }.bind(this));
+        this.runAction(cc.sequence(cc.delayTime(0.2),callFunc));
     },
     return_event: function () { // 返回大厅
         cc.director.runScene(new cc.TransitionMoveInR(0.8, new HallScene()));

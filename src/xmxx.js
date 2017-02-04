@@ -5,6 +5,7 @@ var XmxxGame = cc.Node.extend({
     _className : "XmxxGame",
     diy_parent : null,
     self   : null,
+    body   : null, // body
     data : [],//[[5, 1, 1, 1, 4, 2, 5, 5, 2, 5], [2, 5, 4, 1, 1, 4, 4, 5, 2, 2], [4, 2, 3, 1, 5, 1, 1, 2, 1, 3], [1, 5, 1, 4, 1, 5, 5, 2, 3, 3], [2, 2, 5, 5, 4, 4, 2, 2, 5, 3], [4, 2, 2, 5, 4, 1, 1, 2, 1, 4], [3, 5, 2, 4, 5, 1, 2, 1, 3, 1], [4, 3, 1, 2, 2, 5, 4, 3, 4, 2], [4, 5, 4, 1, 1, 1, 1, 2, 2, 5], [3, 2, 3, 3, 4, 1, 3, 2, 1, 5]],cells
     cells :[],
     selected :[],
@@ -12,6 +13,8 @@ var XmxxGame = cc.Node.extend({
     score : 0,
     add_score : 0,
     selectLabel: '',  // 8连消320分
+    leftLabel : null, // 剩余0个星星
+    awardLabel: null, // 奖励2000分
     game_is_over : false, // 游戏是否结束标志
     particle :null, // 粒子效果
     ctor:function (parent,res_bg,data) {
@@ -31,6 +34,16 @@ var XmxxGame = cc.Node.extend({
         this.diy_parent.addChild(bg);
     },
     init_data : function (data) {
+        if(data == undefined){
+            data = new Array(10);
+            for (var i = 0; i < 10; i++) {
+                var d = new Array(10);
+                for (var j = 0; j < 10; j++) {
+                    d[j] = Math.ceil(Math.random() * 4) + 1;
+                }
+                data[i] = d;
+            }
+        }
         this.data = data;
         this.visited = new Array(10);
         // 初始化 visited数组,data数组
@@ -58,6 +71,7 @@ var XmxxGame = cc.Node.extend({
     createBody : function(){
         var size = cc.winSize;
         var body = new cc.Sprite();
+        this.body = body;
         body.setTextureRect(cc.rect(0,0,0,0));
         this.diy_parent.addChild(body);
         // 创建SpriteBatchNode
@@ -167,8 +181,8 @@ var XmxxGame = cc.Node.extend({
                         p.move_left();
                         if(cc.loader.getRes(res.Pop) && xx_global_config.IsPlayMusic){ cc.audioEngine.playMusic(res.Pop,false);}
                         p.selected.splice(0,p.selected.length); // 清除数组
-                        p.is_over();
                         p.diy_parent.after_remove();
+                        p.is_over();
                     }else{
                         p.replace_sprites();
                         p.selected.splice(0,p.selected.length);
@@ -282,11 +296,13 @@ var XmxxGame = cc.Node.extend({
         var label1 = new cc.LabelTTF("奖励" + left_score, "Arial", 40);
         label1.x = cc.winSize.width / 2;
         label1.y = 480;
+        this.awardLabel = label1;
         this.diy_parent.addChild(label1);
 
         var label2 = new cc.LabelTTF("剩余" + count + "个星星", "Arial", 40);
         label2.x = cc.winSize.width / 2;
         label2.y = 440;
+        this.leftLabel = label2;
         this.diy_parent.addChild(label2);
 
         this.diy_parent.deal_with_over(left_score,count,this.score);
@@ -305,5 +321,36 @@ var XmxxGame = cc.Node.extend({
             }
             console.log(str);
         }
+    },
+    all_blink : function () {
+        var blink = cc.blink(1,10);
+        var arr = [];
+        for(var i=0;i<10;i++) {
+            for (var j = 0; j < 10; j++) {
+                if(this.cells[i][j] == 0) continue;
+
+                arr[arr.length] =this.cells[i][j].pos;
+                this.cells[i][j].runAction(blink.clone());
+            }
+        }
+
+        var callFunc = cc.callFunc(function () {
+            for(var i=0;i<10;i++) {
+                for (var j = 0; j < 10; j++) {
+                    if(this.cells[i][j] == 0) continue;
+                    this.cells[i][j].removeFromParent(true);
+                    this.cells[i][j] = 0;
+                }
+            }
+            for(var x = 0;x<arr.length;x++){
+                var par = this.particle.clone();
+                var pos = arr[x];
+                par.setPosition(cc.p(32 + parseInt((pos - 1) % 10) * 64, 640 - 32 - parseInt((pos - 1) / 10) * 64));
+                this.diy_parent.addChild(par);
+            }
+            this.diy_parent.next_level();
+        }.bind(this));
+        this.diy_parent.runAction(cc.sequence(cc.delayTime(1),callFunc));
+        //this.diy_parent.runAction(cc.sequence(cc.delayTime(1),callFunc));
     }
 });
