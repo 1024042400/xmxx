@@ -171,6 +171,14 @@
             <sources dir="${basedir}">
                 <file name="src/resource.js"/>
                 <file name="src/app.js"/>
+                <file name="src/scene/hall_scene.js"/>
+                <file name="src/scene/single_scene.js"/>
+                <file name="src/scene/pk_scene.js"/>
+                <file name="src/tools/diy_method.js"/>
+                <file name="src/tools/time_count.js"/>
+                <file name="src/tools/xxtea.js"/>
+                <file name="src/xmxx.js"/>
+                <file name="src/static_classes.js"/>
                 <file name="main.js"/>
 
             </sources>

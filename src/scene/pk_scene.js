@@ -178,7 +178,6 @@ var PkLayer = cc.Layer.extend({
         wb.x = cc.winSize.width/2;
         wb.y = cc.winSize.height/2;
 
-
         var timeLabel = new cc.LabelTTF(Math.ceil(wait_sec-Math.ceil(ts-crt_ts)) + 's',"HKHBJT_FONT",48);
         timeLabel.setFontFillColor(cc.color(234,0,0));
         timeLabel.x = wb.getContentSize().width/2;
@@ -252,7 +251,7 @@ var PkLayer = cc.Layer.extend({
              this.runAction(cc.sequence(delay,callFunc));
              */
         }.bind(this));
-        this.addChild(pr3);
+        self.addChild(pr3);
         self.addChild(pr2);
         self.addChild(pr1);
         self.addChild(pr_go);
