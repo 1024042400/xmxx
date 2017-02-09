@@ -1,6 +1,7 @@
 /**
  * Created by jingyuan on 2017/1/20.
  */
+// 自定义事件
 var XXEvents = cc.Class.extend({
     create_event : function(_clazz,name){ // 调用_clazz的name方法
         return cc.EventListener.create({
@@ -21,4 +22,4 @@ var XXEvents = cc.Class.extend({
         });
     }
 });
-
+var xxEvents = new XXEvents();

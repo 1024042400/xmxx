@@ -33,7 +33,7 @@ var XmxxGame = cc.Node.extend({
         bg.setLocalZOrder(-100);
         this.diy_parent.addChild(bg);
     },
-    init_data : function (data) {
+    init_data : function (data,clear_score) {
         if(data == undefined){
             data = new Array(10);
             for (var i = 0; i < 10; i++) {
@@ -44,6 +44,7 @@ var XmxxGame = cc.Node.extend({
                 data[i] = d;
             }
         }
+        if(clear_score == undefined){clear_score = true;}
         this.data = data;
         this.visited = new Array(10);
         // 初始化 visited数组,data数组
@@ -58,15 +59,16 @@ var XmxxGame = cc.Node.extend({
         this.cells = [];
         this.selected = [];
         this.add_score = 0;
-        this.score = 0;
+        if(clear_score) {this.score = 0;}
         this.game_is_over = false;
         this.particle = new cc.ParticleSystem(res.Particle);
 
-        this.diy_parent.sub_init_data();
         this.selectLabel = new cc.LabelTTF('',"Arial",38);
         this.selectLabel.x = cc.winSize.width/2;
         this.selectLabel.y = 680;
         this.diy_parent.addChild(this.selectLabel);
+
+        this.diy_parent.sub_init_data();
     },
     createBody : function(){
         var size = cc.winSize;
@@ -171,18 +173,18 @@ var XmxxGame = cc.Node.extend({
                             cell.removeFromParent(true);
                             p.cells[parseInt((pos - 1) / 10)][(pos - 1) % 10] = 0;
 
-                            if(!cc.sys.isMobile) {
+                            //if(!cc.sys.isMobile) {
                                 var par = p.particle.clone();
                                 par.setPosition(cc.p(32 + parseInt((pos - 1) % 10) * 64, 640 - 32 - parseInt((pos - 1) / 10) * 64));
                                 p.diy_parent.addChild(par);
-                            }
+                            //}
                         }
                         p.drop_down();
                         p.move_left();
                         if(cc.loader.getRes(res.Pop) && xx_global_config.IsPlayMusic){ cc.audioEngine.playMusic(res.Pop,false);}
                         p.selected.splice(0,p.selected.length); // 清除数组
-                        p.diy_parent.after_remove();
                         p.is_over();
+                        p.diy_parent.after_remove();
                     }else{
                         p.replace_sprites();
                         p.selected.splice(0,p.selected.length);
@@ -291,6 +293,7 @@ var XmxxGame = cc.Node.extend({
         if(count < 10){
             left_score = 2000 - count*count*20;
             this.score += left_score;
+            this.add_score += left_score;
         }
 
         var label1 = new cc.LabelTTF("奖励" + left_score, "Arial", 40);
@@ -348,7 +351,7 @@ var XmxxGame = cc.Node.extend({
                 par.setPosition(cc.p(32 + parseInt((pos - 1) % 10) * 64, 640 - 32 - parseInt((pos - 1) / 10) * 64));
                 this.diy_parent.addChild(par);
             }
-            this.diy_parent.next_level();
+            if(this.diy_parent.next_level) {this.diy_parent.next_level();} // 下一关
         }.bind(this));
         this.diy_parent.runAction(cc.sequence(cc.delayTime(1),callFunc));
         //this.diy_parent.runAction(cc.sequence(cc.delayTime(1),callFunc));

@@ -72,13 +72,13 @@ var MainLayer = cc.Layer.extend({
     next_level :function () { // 开始下一关
         this.level += 1;
         this.levelLabel.setString('第'+this.level + '关');
-        this.scoreLabel.setString('当前得分' + 0);
+        //this.scoreLabel.setString('当前得分' + 0);
         this.xmxx.selectLabel.setString('');
         this.xmxx.leftLabel.removeFromParent(true);
         this.xmxx.awardLabel.removeFromParent(true);
         this.xmxx.body.removeFromParent(true);
         var callFunc = cc.callFunc(function () {
-            this.xmxx.init_data(undefined);
+            this.xmxx.init_data(undefined,false);
             this.xmxx.createBody();
         }.bind(this));
         this.runAction(cc.sequence(cc.delayTime(0.2),callFunc));

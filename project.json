@@ -15,15 +15,17 @@
         "src/resource.js",
         "src/app.js",
 
+        "src/tools/xxtea.js",
+        "src/tools/diy_method.js",
+        "src/tools/time_count.js",
+
+        "src/layer/dialog_layer.js",
         "src/scene/hall_scene.js",
         "src/scene/single_scene.js",
         "src/scene/pk_scene.js",
+        "src/scene/over_scene.js",
 
-        "src/tools/diy_method.js",
-        "src/tools/time_count.js",
-        "src/tools/xxtea.js",
-        "src/xmxx.js",
+        "src/xmxx.js"
 
-        "src/static_classes.js"
     ]
 }

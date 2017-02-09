@@ -16,6 +16,11 @@ var HallLayer = cc.Layer.extend({
         // 3.星星pk赛
         this.xx_pk();
         //this.can_touch = true;
+
+        //var arr = new Array(2);
+        //arr[0] =   "{\"id\":5577664,\"pid\":5084,\"score\":1925,\"rank\":1,\"dami\":200,\"join_ts\":\"1486557119.578202\",\"add_star\":0,\"name\":\"游客5084\",\"logo\":null,\"star\":0,\"gold\":1900}";
+        //arr[1] =   "{\"id\":5577664,\"pid\":5086,\"score\":19256,\"rank\":2,\"dami\":100,\"join_ts\":\"1486557119.578202\",\"add_star\":0,\"name\":\"游客5084\",\"logo\":null,\"star\":0,\"gold\":1900}";
+        //cc.director.runScene(new cc.TransitionFade(1,new OverScene(arr)));
     },
     xx_practice : function () {
         // 1.图标
@@ -50,36 +55,19 @@ var HallLayer = cc.Layer.extend({
         this.addChild(pkLabel);
     },
     single_event : function () {
-        if(this.can_touch == false) return false;
         cc.director.runScene(new cc.TransitionMoveInR(0.8, new MainScene()));//TransitionFade
     },
     pk_event : function () {
-        if(this.can_touch == false) return false;
         cc.director.runScene(new cc.TransitionMoveInB(0.6,new PkScene()));
     }
 });
 
 var HallScene = cc.Scene.extend({
-    dialogLayer : null,
     ctor : function (msg) {
         this._super();
         if(msg != undefined){
-
-            this.dialogLayer = new cc.LayerColor(cc.color(0,0,0,127));
-            this.addChild(this.dialogLayer,1001);
-            this.dialogLayer.event_1 = function () {
-                var delay = cc.delayTime(0.1);
-                var callFunc = cc.callFunc(function () {
-                    this.removeFromParent();
-                }.bind(this));
-                this.runAction(cc.sequence(delay,callFunc));
-            };
-            cc.eventManager.addListener(xxEvents.create_event(this.dialogLayer, "event_1"), this.dialogLayer);
-
-            var ale = new cc.Sprite("#alert_bg.png");
-            this.dialogLayer.addChild(ale);
-            ale.x = cc.winSize.width/2;
-            ale.y = cc.winSize.height/2;
+            var layer = new DialogLayer(msg);
+            this.addChild(layer,1001);
         }
 
     },

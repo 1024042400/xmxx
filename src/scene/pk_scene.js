@@ -11,12 +11,16 @@ var PkLayer = cc.Layer.extend({
     status : null,
     players : null,
     rank : 6,
-    pid : 8236979,
+    pid : null,
     waitingBg : null,
     xmxx : null,
     countDownTimeControl : null,
+    gamingTimeControl : null,
+    gamingTime : null,
+    gamingTimeLabel : null,
     ctor:function () {
         this._super();
+        this.pid = 8236979;//5081 + parseInt(Math.random()*6);
         this.loadBg();
         this.init_data();
         this.loadHeader();
@@ -29,9 +33,9 @@ var PkLayer = cc.Layer.extend({
         data = xxtea.encode(JSON.stringify(data));
         this.socket.send(this.send_diy_data(data,"upscore"));
     },
-    deal_with_over : function () {},
+    deal_with_over : function () {this.xmxx.selectLabel.setString('');this.xmxx.all_blink();},
     loadWebSocket : function () {
-        var socket = new WebSocket("ws://localhost:7000/ws/1/8236979");//"ws://echo.websocket.org");
+        var socket = new WebSocket("ws://game.appseye.com/ws/1/"+this.pid);//"ws://echo.websocket.org");
         var self = this;
         this.socket = socket;
         socket.binaryType = "arraybuffer";
@@ -69,7 +73,7 @@ var PkLayer = cc.Layer.extend({
                     self.status = 40;
                     self.waitingBg.removeFromParent();
                     self.xmxx = new XmxxGame(self,null,message.xxs);
-                    self.run_prestart();
+                    self.run_prestart(message.game_sec);
                 }else if (type == "room_start"){
                     self.status = 50;
                 } else if(type == "room_quit"){
@@ -77,7 +81,9 @@ var PkLayer = cc.Layer.extend({
                 } else if(type == "room_upsocre"){
                     self.update_score(message.players);
                 } else if(type == "room_cancel"){
-                    cc.director.runScene(new cc.TransitionFade(1,new HallScene("退出了")));
+                    cc.director.runScene(new cc.TransitionFade(1,new HallScene("无人迎战")));
+                } else if(type == "room_over"){
+                    cc.director.runScene(new cc.TransitionFade(1,new OverScene(message.players,self.pid)));
                 }
 
             }
@@ -88,6 +94,7 @@ var PkLayer = cc.Layer.extend({
         };
         socket.onclose = function () {
             cc.log("关闭连接");
+            //cc.director.runScene(new cc.TransitionFade(1,new HallScene("lianjie关闭了")));
             this.socket = null;
         };
         var delay = cc.delayTime(1);
@@ -210,11 +217,24 @@ var PkLayer = cc.Layer.extend({
             this.scoreLabels[i].setString(player.score);
         }
     },
-    run_prestart : function () {
+    run_prestart : function (game_sec) { // 3,2,1,go!
+        this.gamingTime = game_sec;
+        this.gamingTimeLabel = new cc.LabelTTF(this.gamingTime + 's',"HKHBJT_FONT",36);
+        this.gamingTimeLabel.setFontFillColor(cc.color(234,0,0));
+        this.gamingTimeLabel.x = 600;
+        this.gamingTimeLabel.y = 800;
+        this.addChild(this.gamingTimeLabel);
+        var self = this;
+
+        // 60秒倒计时
+        this.gamingTimeControl = new CountDownTimeControl(1,game_sec,function () {
+            self.gamingTime -=1;
+            self.gamingTimeLabel.setString(self.gamingTime + 's');
+        },function(){this.cleanUp();});
+
         var pr3 = new cc.Sprite("#prestart_3.png");
         pr3.x = cc.winSize.width/2;
         pr3.y = cc.winSize.height/2;
-        pr3.setScale(0.01);
         var pr2 = new cc.Sprite("#prestart_2.png");
         pr2.x = cc.winSize.width/2;
         pr2.y = cc.winSize.height/2;
@@ -227,6 +247,7 @@ var PkLayer = cc.Layer.extend({
 
         pr_go.event_1 = function () {};
         cc.eventManager.addListener(xxEvents.create_event(pr_go, "event_1"), pr_go);
+        pr3.setScale(0.01);
         pr2.setScale(0.01);
         pr1.setScale(0.01);
         pr_go.setScale(0.01);
@@ -236,20 +257,13 @@ var PkLayer = cc.Layer.extend({
         dialogLayer.event_1 = function () {};
         cc.eventManager.addListener(xxEvents.create_event(dialogLayer, "event_1"), dialogLayer);
 
-        var self = this;
+
         var callFunc = cc.callFunc(function () {
             pr3.removeFromParent();
             pr2.removeFromParent();
             pr1.removeFromParent();
             pr_go.removeFromParent();
             dialogLayer.removeFromParent();
-            /*
-             var delay = cc.delayTime(0.1);
-             var callFunc = cc.callFunc(function () {
-             this.removeFromParent();
-             }.bind(this));
-             this.runAction(cc.sequence(delay,callFunc));
-             */
         }.bind(this));
         self.addChild(pr3);
         self.addChild(pr2);
@@ -261,6 +275,10 @@ var PkLayer = cc.Layer.extend({
         pr2.runAction(cc.sequence(cc.delayTime(2),cc.spawn(new cc.ScaleTo(0.1, 1),cc.fadeIn(0.1)),cc.fadeOut(0.9)));
         pr1.runAction(cc.sequence(cc.delayTime(3),cc.spawn(new cc.ScaleTo(0.1, 1),cc.fadeIn(0.1)),cc.fadeOut(0.9)));
         pr_go.runAction(cc.sequence(cc.delayTime(4),cc.spawn(new cc.ScaleTo(0.1, 1.5),cc.fadeIn(0.1)),cc.fadeOut(0.9),callFunc));
+
+        this.runAction(cc.sequence(cc.delayTime(4),cc.callFunc(function () {
+            self.gamingTimeControl.startCountDownTime();
+        }.bind(self))));
     },
     send_diy_data : function (data,action) {
         return "{\"command\":\"message\",\"identifier\":\"{\\\"channel\\\":\\\"PkaChannel\\\"}\",\"data\":\"{\\\"data\\\":\\\""+data+"\\\",\\\"action\\\":\\\""+action+"\\\"}\"}";

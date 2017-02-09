@@ -10,7 +10,8 @@ var res = {
     PkPng        : "res/image/pk.png",
     PkPlist      : "res/image/pk.plist",
     PkBg         : "res/image/pk_bg.png",
-    Particle     : "res/image/particle_texture.plist"
+    Particle     : "res/image/particle_texture.plist",
+    OverBg       : "res/image/over_bg.png"
 };
 
 var g_resources = [];

@@ -280,3 +280,11 @@ Base64.decode64 = function (input) {
 
     return output;
 };
+
+var xxtea = new Xxtea("d253a9c4dea02b36c4f50db61838710f");
+xxtea.encode = function (data) {
+    return "y67mcyP5KO" + Base64.encode64(xxtea.xxtea_encrypt(data));
+};
+xxtea.decode  = function (data) {
+    xxtea.xxtea_decrypt(data.substring(10,data.length));
+};
