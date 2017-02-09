@@ -20,7 +20,7 @@ var PkLayer = cc.Layer.extend({
     gamingTimeLabel : null,
     ctor:function () {
         this._super();
-        this.pid = 8236979;//5081 + parseInt(Math.random()*6);
+        this.pid = xxPids[parseInt(Math.random()*xxPids.length)];
         this.loadBg();
         this.init_data();
         this.loadHeader();

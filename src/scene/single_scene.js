@@ -11,6 +11,9 @@ var MainLayer = cc.Layer.extend({
     music_button: null, // 音乐图标
     level : null,
     levelLabel : null,
+    levelScore : null,
+    targetLabel: null,
+    passSprite : null,
     ctor: function () {
         this._super();
 
@@ -36,42 +39,59 @@ var MainLayer = cc.Layer.extend({
 
         var size = cc.winSize;
         this.level = 1;
-        this.levelLabel = new cc.LabelTTF('第'+this.level + '关', "Arial", 38);
+        this.levelLabel = new cc.LabelTTF('关卡:  '+this.level, "HKHBJT_FONT", 26);
+        this.levelLabel.setColor(cc.color(147, 193, 210));
         this.levelLabel.x = size.width / 2;
-        this.levelLabel.y = size.height - size.height / 10 + 50;
+        this.levelLabel.y = size.height - size.height / 10 + 65;
         this.addChild(this.levelLabel);
         this.xmxx = new XmxxGame(this, res.Bg, undefined);
         return true;
     },
     sub_init_data: function () {
         var size = cc.winSize;
+        if(this.passSprite != null){// 通关消息消失
+            this.passSprite.removeFromParent();
+            this.passSprite = null;
+        }
         if(this.scoreLabel == null){
-            this.scoreLabel = new cc.LabelTTF('', "Arial", 38);
+            this.scoreLabel = new cc.LabelTTF('', "HKHBJT_FONT", 36);
+            this.scoreLabel.setColor(cc.color(255,255,0));
             this.scoreLabel.x = size.width / 2;
-            this.scoreLabel.y = size.height - size.height / 10;
+            this.scoreLabel.y = size.height - size.height / 10 - 40;
             this.addChild(this.scoreLabel);
+        }
+        if(this.targetLabel == null) {
+            this.targetLabel = new cc.LabelTTF('目标:  ' + this.get_target_score(), "HKHBJT_FONT", 26);
+            this.targetLabel.setColor(cc.color(147, 193, 210));
+            this.targetLabel.setPosition(cc.winSize.width / 2, cc.winSize.height - 80);
+            this.addChild(this.targetLabel);
+        }else{
+            this.targetLabel.setString('目标:  ' + this.get_target_score());
+            this.targetLabel.runAction(cc.blink(1,2));
         }
     },
     after_remove: function () {
-        this.scoreLabel.setString('当前得分' + this.xmxx.score);
+        this.scoreLabel.setString(this.xmxx.score);//'当前得分' +
+        if(this.xmxx.score > this.levelScore && this.passSprite == null){
+            // 播放音效
+            if(cc.loader.getRes(res.Passed) && xx_global_config.IsPlayMusic) {cc.audioEngine.playMusic(res.Passed,false);}
+            //
+            var passed = new cc.Sprite("#passed.png");
+            this.addChild(passed);
+            passed.setPosition(cc.winSize.width / 2,cc.winSize.height / 2);
+            passed.setScale(2);
+            passed.runAction(cc.sequence(cc.fadeIn(0.1),cc.blink(0.5,2),cc.delayTime(0.2),cc.spawn(new cc.ScaleTo(0.1, 1),cc.moveTo(0.5,100,750))));
+            this.passSprite = passed;
+        }
     },
     deal_with_over: function (left_score, count, score) {
-        /*
-        var label1 = new cc.LabelTTF("奖励" + left_score, "Arial", 40);
-        label1.x = cc.winSize.width / 2;
-        label1.y = 480;
-        this.addChild(label1);
-
-        var label2 = new cc.LabelTTF("剩余" + count + "个星星", "Arial", 40);
-        label2.x = cc.winSize.width / 2;
-        label2.y = 440;
-        this.addChild(label2);*/
-        this.scoreLabel.setString('当前得分' + score);
+        this.scoreLabel.setString(score);
+        if(cc.loader.getRes(res.Plevel) && xx_global_config.IsPlayMusic) {cc.audioEngine.playMusic(res.Plevel,false);}
         this.xmxx.all_blink();
     },
     next_level :function () { // 开始下一关
         this.level += 1;
-        this.levelLabel.setString('第'+this.level + '关');
+        this.levelLabel.setString('关卡:  '+this.level);
         //this.scoreLabel.setString('当前得分' + 0);
         this.xmxx.selectLabel.setString('');
         this.xmxx.leftLabel.removeFromParent(true);
@@ -94,6 +114,34 @@ var MainLayer = cc.Layer.extend({
             xx_global_config.IsPlayMusic = true;
             this.music_button.initWithSpriteFrame(cc.spriteFrameCache.getSpriteFrame("sound_on.png"));
         }
+    },
+    get_target_score : function () {
+        if(this.level == 1){
+            this.levelScore = 1000;
+        }else if(this.level <= 5){
+            this.levelScore = 1000 + (this.level-1)*1500;
+        }else if(this.level <= 10){
+            this.levelScore = 7000 + (this.level-5)*1800;
+        }else if(this.level <= 15){
+            this.levelScore = 16000 + (this.level-10)*2000;
+        }else if(this.level <= 20){
+            this.levelScore = 26000 + (this.level-15)*2500;
+        }else if(this.level <= 25){
+            this.levelScore = 38500 + (this.level-20)*3000;
+        }else if(this.level <= 30){
+            this.levelScore = 53500 + (this.level-25)*3500;
+        }else if(this.level <= 35){
+            this.levelScore = 71500 + (this.level-30)*4000;
+        }else if(this.level <= 40){
+            this.levelScore = 91500 + (this.level-35)*4500;
+        }else if(this.level <= 50){
+            this.levelScore = 114000 + (this.level-40)*6000;
+        }else if(this.level <= 60){
+            this.levelScore = 174000 + (this.level-50)*8000;
+        }else {
+            this.levelScore = 254000 + (this.level-60)*12000;
+        }
+        return this.levelScore;
     }
 });
 
@@ -104,6 +152,37 @@ var MainScene = cc.Scene.extend({
         this.addChild(layer);
     }
 });
+/*
+ function conf.getScoreByLevel( level )
+ local score = 0
+ if level == 1 then
+ score = 1000
+ elseif level >=2 and level <=5 then
+ score = 1000 + (level-1) * 1500
+ elseif level >= 6 and level <= 10 then
+ score = 7000 + (level-5) * 1800
+ elseif level >= 11 and level <= 15 then
+ score = 16000 + (level - 10) * 2000
+ elseif level >= 16 and level <= 20 then
+ score = 26000 + (level - 15) * 2500
+ elseif level >= 21 and level <= 25 then
+ score = 38500 + (level - 20) * 3000
+ elseif level >= 26 and level <= 30 then
+ score = 53500 + (level - 25) * 3500
+ elseif level >= 31 and level <= 35 then
+ score = 71500 + (level - 30) * 4000
+ elseif level >= 36 and level <= 40 then
+ score = 91500 + (level - 35) * 4500
+ elseif level >= 41 and level <= 50 then
+ score = 114000 + (level - 40) * 6000
+ elseif level >= 51 and level <= 60 then
+ score = 174000 + (level - 50) * 8000
+ elseif level > 60 then
+ score = 254000 + (level - 60) * 12000
+ end
+ return score
+ end
+ */
 /*
  data: [],//[[5, 1, 1, 1, 4, 2, 5, 5, 2, 5], [2, 5, 4, 1, 1, 4, 4, 5, 2, 2], [4, 2, 3, 1, 5, 1, 1, 2, 1, 3], [1, 5, 1, 4, 1, 5, 5, 2, 3, 3], [2, 2, 5, 5, 4, 4, 2, 2, 5, 3], [4, 2, 2, 5, 4, 1, 1, 2, 1, 4], [3, 5, 2, 4, 5, 1, 2, 1, 3, 1], [4, 3, 1, 2, 2, 5, 4, 3, 4, 2], [4, 5, 4, 1, 1, 1, 1, 2, 2, 5], [3, 2, 3, 3, 4, 1, 3, 2, 1, 5]],
  cells: [],

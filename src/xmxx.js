@@ -17,6 +17,8 @@ var XmxxGame = cc.Node.extend({
     awardLabel: null, // 奖励2000分
     game_is_over : false, // 游戏是否结束标志
     particle :null, // 粒子效果
+    particleCount : 0,
+    particless:[],
     ctor:function (parent,res_bg,data) {
         this._super();
         this.diy_parent = parent;
@@ -24,6 +26,7 @@ var XmxxGame = cc.Node.extend({
         this.loadBackground(res_bg);
         this.init_data(data);
         this.createBody();
+
         return true;
     },
     loadBackground : function (res_bg) {
@@ -34,12 +37,12 @@ var XmxxGame = cc.Node.extend({
         this.diy_parent.addChild(bg);
     },
     init_data : function (data,clear_score) {
-        if(data == undefined){
+        if(data == undefined || data == null){
             data = new Array(10);
             for (var i = 0; i < 10; i++) {
                 var d = new Array(10);
                 for (var j = 0; j < 10; j++) {
-                    d[j] = Math.ceil(Math.random() * 4) + 1;
+                    d[j] = Math.ceil(Math.random() * 5);
                 }
                 data[i] = d;
             }
@@ -64,10 +67,10 @@ var XmxxGame = cc.Node.extend({
         this.particle = new cc.ParticleSystem(res.Particle);
 
         this.selectLabel = new cc.LabelTTF('',"Arial",38);
-        this.selectLabel.x = cc.winSize.width/2;
-        this.selectLabel.y = 680;
+        this.selectLabel.setPosition(cc.winSize.width/2,680);
         this.diy_parent.addChild(this.selectLabel);
 
+        this.particleCount = 0;
         this.diy_parent.sub_init_data();
     },
     createBody : function(){
@@ -95,7 +98,7 @@ var XmxxGame = cc.Node.extend({
                 var sca = Math.random()-0.2;
                 if(sca<0)  sca= Math.random();
                 node.setScale(sca);
-                node.runAction(new cc.ScaleTo(0.8+Math.random(), 1));
+                node.runAction(new cc.ScaleTo(0.4+Math.random(), 1)); //0.4+Math.random()秒,从小变到大,1为100%
 
                 batchNode.addChild(node);
                 //body.addChild(node);
@@ -173,15 +176,52 @@ var XmxxGame = cc.Node.extend({
                             cell.removeFromParent(true);
                             p.cells[parseInt((pos - 1) / 10)][(pos - 1) % 10] = 0;
 
-                            //if(!cc.sys.isMobile) {
+                            if(cc.sys.isMobile && p.particleCount > 6) {
+                            }else{
+                                p.particleCount ++;
                                 var par = p.particle.clone();
                                 par.setPosition(cc.p(32 + parseInt((pos - 1) % 10) * 64, 640 - 32 - parseInt((pos - 1) / 10) * 64));
                                 p.diy_parent.addChild(par);
-                            //}
+                                p.particless[p.particless.length] = par;
+                                cc.log("par:",par);
+                            }
                         }
+                        p.runAction(cc.sequence(cc.delayTime(2),cc.callFunc(function () {
+                            for(var xxx =0;xxx<p.particless.length;xxx++){
+                                p.particless[xxx] = null;
+                                p.particless[xxx].removeFromParent();
+
+                            }
+                        }.bind(p))));
+
+                        //cc.log(p.particless[0]);
+                        p.particleCount = 0;
+
                         p.drop_down();
                         p.move_left();
                         if(cc.loader.getRes(res.Pop) && xx_global_config.IsPlayMusic){ cc.audioEngine.playMusic(res.Pop,false);}
+
+                        if(p.selected.length >=6){ // 太棒了! 哦买噶!  等等
+                            //var sprite_str = "";
+                            if(cc.loader.getRes(res.Praise) && xx_global_config.IsPlayMusic) {cc.audioEngine.playMusic(res.Praise,false);}
+                            if(p.selected.length < 20){
+                                var sprite_str = "#praise_"+parseInt(1+Math.random()*3)+".png";
+                            }else if(p.selected.length < 25){
+                                var sprite_str = "#praise_4.png";
+                            }else {
+                                var sprite_str = "#praise_5.png";
+                            }
+                            var praise = new cc.Sprite(sprite_str);//""
+                            praise.setPosition(cc.winSize.width / 2,cc.winSize.height / 2 + 120);
+                            praise.setScale(3);
+                            p.diy_parent.addChild(praise,10000);
+
+                            var callFunc = cc.callFunc(function () {
+                                praise.removeFromParent();
+                            }.bind(p.diy_parent));
+                            praise.runAction(cc.sequence(new cc.ScaleTo(0.3,2),cc.fadeOut(0.5),cc.fadeIn(0.5),cc.fadeOut(0.5),callFunc));
+                        }
+
                         p.selected.splice(0,p.selected.length); // 清除数组
                         p.is_over();
                         p.diy_parent.after_remove();
@@ -325,7 +365,7 @@ var XmxxGame = cc.Node.extend({
             console.log(str);
         }
     },
-    all_blink : function () {
+    all_blink : function () { // 结束后闪烁动作
         var blink = cc.blink(1,10);
         var arr = [];
         for(var i=0;i<10;i++) {
