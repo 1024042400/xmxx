@@ -42,7 +42,7 @@ var XmxxGame = cc.Node.extend({
             for (var i = 0; i < 10; i++) {
                 var d = new Array(10);
                 for (var j = 0; j < 10; j++) {
-                    d[j] = Math.ceil(Math.random() * 3);
+                    d[j] = Math.ceil(Math.random() * 5);
                 }
                 data[i] = d;
             }
