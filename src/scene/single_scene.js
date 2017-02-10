@@ -45,6 +45,14 @@ var MainLayer = cc.Layer.extend({
         this.levelLabel.y = size.height - size.height / 10 + 65;
         this.addChild(this.levelLabel);
         this.xmxx = new XmxxGame(this, res.Bg, undefined);
+        //this.addChild(this.xmxx);
+
+
+        var bg = new cc.Sprite(res.Bg);
+        bg.setPosition(cc.winSize.width / 2,cc.winSize.height / 2);
+        bg.setLocalZOrder(-100);
+        this.addChild(bg);
+
         return true;
     },
     sub_init_data: function () {
@@ -54,7 +62,7 @@ var MainLayer = cc.Layer.extend({
             this.passSprite = null;
         }
         if(this.scoreLabel == null){
-            this.scoreLabel = new cc.LabelTTF('', "HKHBJT_FONT", 36);
+            this.scoreLabel = new cc.LabelTTF('0', "HKHBJT_FONT", 46);
             this.scoreLabel.setColor(cc.color(255,255,0));
             this.scoreLabel.x = size.width / 2;
             this.scoreLabel.y = size.height - size.height / 10 - 40;
@@ -67,12 +75,11 @@ var MainLayer = cc.Layer.extend({
             this.addChild(this.targetLabel);
         }else{
             this.targetLabel.setString('目标:  ' + this.get_target_score());
-            this.targetLabel.runAction(cc.blink(1,2));
+            this.targetLabel.runAction(cc.blink(1,3));
         }
     },
-    after_remove: function () {
-        this.scoreLabel.setString(this.xmxx.score);//'当前得分' +
-        if(this.xmxx.score > this.levelScore && this.passSprite == null){
+    judge_pass_level : function () {
+        if(this.xmxx.score >= this.levelScore && this.passSprite == null){
             // 播放音效
             if(cc.loader.getRes(res.Passed) && xx_global_config.IsPlayMusic) {cc.audioEngine.playMusic(res.Passed,false);}
             //
@@ -84,24 +91,40 @@ var MainLayer = cc.Layer.extend({
             this.passSprite = passed;
         }
     },
+    after_remove: function () {
+        this.scoreLabel.setString(this.xmxx.score);//'当前得分' +
+        this.judge_pass_level();
+    },
     deal_with_over: function (left_score, count, score) {
         this.scoreLabel.setString(score);
         if(cc.loader.getRes(res.Plevel) && xx_global_config.IsPlayMusic) {cc.audioEngine.playMusic(res.Plevel,false);}
         this.xmxx.all_blink();
     },
     next_level :function () { // 开始下一关
-        this.level += 1;
-        this.levelLabel.setString('关卡:  '+this.level);
-        //this.scoreLabel.setString('当前得分' + 0);
-        this.xmxx.selectLabel.setString('');
-        this.xmxx.leftLabel.removeFromParent(true);
-        this.xmxx.awardLabel.removeFromParent(true);
-        this.xmxx.body.removeFromParent(true);
-        var callFunc = cc.callFunc(function () {
-            this.xmxx.init_data(undefined,false);
-            this.xmxx.createBody();
-        }.bind(this));
-        this.runAction(cc.sequence(cc.delayTime(0.2),callFunc));
+        if(this.xmxx.score < this.levelScore){
+            alert("游戏结束了.");
+            cc.director.runScene(new cc.TransitionMoveInR(0.8, new HallScene()));
+        }else {
+            this.level += 1;
+            this.levelLabel.setString('关卡:  ' + this.level);
+            //this.scoreLabel.setString('当前得分' + 0);
+            this.xmxx.selectLabel.setString('');
+            this.xmxx.leftLabel.removeFromParent(true);
+            this.xmxx.awardLabel.removeFromParent(true);
+            this.xmxx.body.removeFromParent(true);
+            var callFunc = cc.callFunc(function () {
+                this.xmxx.init_data(undefined, false);
+                this.xmxx.createBody();
+            }.bind(this));
+            this.runAction(cc.sequence(cc.delayTime(0.2), callFunc));
+        }
+
+        //清除粒子效果
+        for(var xxx =0;xxx<this.xmxx.particless.length;xxx++){
+            this.xmxx.particless[xxx].removeFromParent();
+            this.xmxx.particless[xxx] = null;
+        }
+        this.xmxx.particless = [];
     },
     return_event: function () { // 返回大厅
         cc.director.runScene(new cc.TransitionMoveInR(0.8, new HallScene()));

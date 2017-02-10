@@ -13,11 +13,12 @@ var XmxxGame = cc.Node.extend({
     score : 0,
     add_score : 0,
     selectLabel: '',  // 8连消320分
+    selectLabelStatus : 0,
     leftLabel : null, // 剩余0个星星
     awardLabel: null, // 奖励2000分
     game_is_over : false, // 游戏是否结束标志
     particle :null, // 粒子效果
-    particleCount : 0,
+    particleCount : 0, // 粒子效果个数,手机端每次最多6个,考虑性能
     particless:[],
     ctor:function (parent,res_bg,data) {
         this._super();
@@ -26,11 +27,10 @@ var XmxxGame = cc.Node.extend({
         this.loadBackground(res_bg);
         this.init_data(data);
         this.createBody();
-
         return true;
     },
     loadBackground : function (res_bg) {
-        if(res_bg == null) return false;
+        if(res_bg == null || res_bg == undefined) return false;
         var bg = new cc.Sprite(res_bg);
         bg.setPosition(cc.winSize.width / 2,cc.winSize.height / 2);
         bg.setLocalZOrder(-100);
@@ -42,7 +42,7 @@ var XmxxGame = cc.Node.extend({
             for (var i = 0; i < 10; i++) {
                 var d = new Array(10);
                 for (var j = 0; j < 10; j++) {
-                    d[j] = Math.ceil(Math.random() * 5);
+                    d[j] = Math.ceil(Math.random() * 3);
                 }
                 data[i] = d;
             }
@@ -69,6 +69,7 @@ var XmxxGame = cc.Node.extend({
         this.selectLabel = new cc.LabelTTF('',"Arial",38);
         this.selectLabel.setPosition(cc.winSize.width/2,680);
         this.diy_parent.addChild(this.selectLabel);
+        this.selectLabelStatus = 0;
 
         this.particleCount = 0;
         this.diy_parent.sub_init_data();
@@ -121,8 +122,10 @@ var XmxxGame = cc.Node.extend({
             this.replace_sprites(); // 替换图片
             this.selectLabel.setString(this.selected.length+'连消'+5*this.selected.length*this.selected.length+'分');
             if(cc.loader.getRes(res.Select) && xx_global_config.IsPlayMusic) {cc.audioEngine.playMusic(res.Select,false);}
+
+            this.selectLabelStatus = 0;
+            this.selectLabel.runAction(cc.fadeIn(0.001));
         }
-        //console.log('selected:'+this.selected);
     },
     deep_search : function(x,y){
         this.visited[x][y] = 1;
@@ -168,7 +171,7 @@ var XmxxGame = cc.Node.extend({
                     //判定
                     if(p.selected.indexOf(target.pos) != -1){
                         p.add_score = p.selected.length * p.selected.length * 5;
-                        p.score += p.add_score;
+
                          // 粒子效果
                         for(var i=0;i<p.selected.length;i++) {
                             var pos = p.selected[i];
@@ -183,23 +186,30 @@ var XmxxGame = cc.Node.extend({
                                 par.setPosition(cc.p(32 + parseInt((pos - 1) % 10) * 64, 640 - 32 - parseInt((pos - 1) / 10) * 64));
                                 p.diy_parent.addChild(par);
                                 p.particless[p.particless.length] = par;
-                                cc.log("par:",par);
                             }
                         }
-                        p.runAction(cc.sequence(cc.delayTime(2),cc.callFunc(function () {
-                            for(var xxx =0;xxx<p.particless.length;xxx++){
-                                p.particless[xxx] = null;
-                                p.particless[xxx].removeFromParent();
 
-                            }
-                        }.bind(p))));
-
-                        //cc.log(p.particless[0]);
                         p.particleCount = 0;
-
                         p.drop_down();
                         p.move_left();
                         if(cc.loader.getRes(res.Pop) && xx_global_config.IsPlayMusic){ cc.audioEngine.playMusic(res.Pop,false);}
+
+                        var selectLabel = new cc.LabelTTF(p.add_score,"HKHBJT_FONT",40);
+                        selectLabel.setPosition(target.x,target.y+100);
+                        p.diy_parent.addChild(selectLabel,1010);
+                        selectLabel.runAction(cc.sequence(
+                            cc.moveBy(0.2,0,50),cc.delayTime(0.3),cc.moveTo(0.4,cc.winSize.width/2,cc.winSize.height - 136),cc.delayTime(0.1),cc.spawn(new cc.ScaleTo(0.3,0.5),cc.fadeOut(0.5)),cc.delayTime(0.1),
+                            cc.callFunc(function () {p.diy_parent.after_remove();selectLabel.removeFromParent();}.bind(p.diy_parent))));
+
+                        p.selectLabelStatus = 1;
+                        p.selectLabel.runAction(cc.sequence(cc.delayTime(4),cc.callFunc(function () {
+                            if(p.selectLabelStatus == 1) {
+                                //p.selectLabel.runAction(cc.fadeOut(1));
+                            }
+                        })));
+
+                        p.score += p.add_score; // 注意顺序.
+                        p.diy_parent.judge_pass_level();
 
                         if(p.selected.length >=6){ // 太棒了! 哦买噶!  等等
                             //var sprite_str = "";
@@ -224,7 +234,7 @@ var XmxxGame = cc.Node.extend({
 
                         p.selected.splice(0,p.selected.length); // 清除数组
                         p.is_over();
-                        p.diy_parent.after_remove();
+                        //p.diy_parent.after_remove();
                     }else{
                         p.replace_sprites();
                         p.selected.splice(0,p.selected.length);
@@ -391,7 +401,9 @@ var XmxxGame = cc.Node.extend({
                 par.setPosition(cc.p(32 + parseInt((pos - 1) % 10) * 64, 640 - 32 - parseInt((pos - 1) / 10) * 64));
                 this.diy_parent.addChild(par);
             }
-            if(this.diy_parent.next_level) {this.diy_parent.next_level();} // 下一关
+            if(this.diy_parent.next_level) { // 下一关
+                this.diy_parent.next_level();//this.diy_parent.runAction(cc.sequence(cc.delayTime(1),
+            }
         }.bind(this));
         this.diy_parent.runAction(cc.sequence(cc.delayTime(1),callFunc));
         //this.diy_parent.runAction(cc.sequence(cc.delayTime(1),callFunc));

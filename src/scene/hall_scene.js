@@ -6,6 +6,7 @@ var HallLayer = cc.Layer.extend({
     ctor:function () {
         this._super();
         // 1.背景
+
         var bg = new cc.Sprite(res.PkBg);
         bg.setPosition(cc.winSize.width / 2,cc.winSize.height / 2);
         this.addChild(bg,-100);
@@ -65,6 +66,7 @@ var HallLayer = cc.Layer.extend({
 var HallScene = cc.Scene.extend({
     ctor : function (msg) {
         this._super();
+
         if(msg != undefined){
             var layer = new DialogLayer(msg);
             this.addChild(layer,1001);
