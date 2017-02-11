@@ -8,9 +8,11 @@ var PkLayer = cc.Layer.extend({
     headerImages : null,
     idLabels : null,
     scoreLabels : null,
+    _scoreLabel: null, // 本人分数标签
     status : null,
     players : null,
     rank : 6,
+    rankLabel : null,
     pid : null,
     waitingBg : null,
     xmxx : null,
@@ -18,6 +20,8 @@ var PkLayer = cc.Layer.extend({
     gamingTimeControl : null,
     gamingTime : null,
     gamingTimeLabel : null,
+    process : null,
+    pr_count : 0,
     ctor:function () {
         this._super();
         this.pid = xxPids[parseInt(Math.random()*xxPids.length)];
@@ -27,11 +31,14 @@ var PkLayer = cc.Layer.extend({
         this.loadWebSocket();
     },
     sub_init_data : function () {},
-    after_remove : function () {
+    send_upscore : function () {
         var data = {"cscore":this.xmxx.score - this.xmxx.add_score,"ascore":this.xmxx.add_score,"is_over" : this.xmxx.game_is_over};
-        cc.log('data:',data);
+        //cc.log('data:',data);
         data = xxtea.encode(JSON.stringify(data));
         this.socket.send(this.send_diy_data(data,"upscore"));
+    },
+    after_remove : function () {
+        this._scoreLabel.setString(this.xmxx.score);
     },
     deal_with_over : function () {this.xmxx.selectLabel.setString('');this.xmxx.all_blink();},
     loadWebSocket : function () {
@@ -59,8 +66,8 @@ var PkLayer = cc.Layer.extend({
                 var message = JSON.parse(d.message);
                 var type = message.type;
 
-                cc.log("收到响应数据1:",message.type);
-                cc.log("收到响应数据2:",JSON.parse(d.message));
+                //cc.log("收到响应数据1:",message.type);
+                //cc.log("收到响应数据2:",JSON.parse(d.message));
                 //cc.log("收到响应数据3:",event.data);
 
                 if(type == "room_joined"){
@@ -72,14 +79,15 @@ var PkLayer = cc.Layer.extend({
                 }else if(type == "room_prestart"){
                     self.status = 40;
                     self.waitingBg.removeFromParent();
-                    self.xmxx = new XmxxGame(self,null,message.xxs);
-                    self.run_prestart(message.game_sec);
+                    self.xmxx = new XmxxGame(self,null,message.xxs,cc.winSize.height - 210);
+                    self.run_prestart(message.game_sec,message.players.length);
                 }else if (type == "room_start"){
                     self.status = 50;
                 } else if(type == "room_quit"){
                     self.update_players(message.players);
                 } else if(type == "room_upsocre"){
                     self.update_score(message.players);
+                    self.update_rank(message.players);
                 } else if(type == "room_cancel"){
                     cc.director.runScene(new cc.TransitionFade(1,new HallScene("无人迎战")));
                 } else if(type == "room_over"){
@@ -94,18 +102,8 @@ var PkLayer = cc.Layer.extend({
         };
         socket.onclose = function () {
             cc.log("关闭连接");
-            //cc.director.runScene(new cc.TransitionFade(1,new HallScene("lianjie关闭了")));
             this.socket = null;
         };
-        var delay = cc.delayTime(1);
-        var callFunc = cc.callFunc(function () {
-            var pr = new cc.Sprite("#prestart_3.png");
-            pr.x = cc.winSize.width;
-            pr.y = cc.winSize.height;
-            self.addChild(pr);
-            pr.fadeIn(0.1)
-        }.bind(this));
-
     },
     init_data : function () {
         this.status = 0;
@@ -175,8 +173,18 @@ var PkLayer = cc.Layer.extend({
             this.idLabels[i].setString(this.players[i].pid);
             if(this.players[i].pid == this.pid){
                 this.idLabels[i].setFontFillColor(cc.color(234,0,0));
+                this.scoreLabels[i].setFontFillColor(cc.color(255,255,0));
             }
             this.scoreLabels[i].setString(this.players[i].score);
+        }
+    },
+    update_rank : function (players) {
+        for(var i=0;i<players.length;i++){
+            var player = JSON.parse(players[i]);
+            if(player.pid == this.pid){
+                this.rankLabel.setString("排名"+player.rank+"/"+players.length);
+                break;
+            }
         }
     },
     load_waiting_bg : function (crt_ts,ts,wait_sec) { // 等待时的图片、倒计时、以及文字描述.
@@ -217,11 +225,22 @@ var PkLayer = cc.Layer.extend({
             this.scoreLabels[i].setString(player.score);
         }
     },
-    run_prestart : function (game_sec) { // 3,2,1,go!
+    run_prestart : function (game_sec,people_count) { // 3,2,1,go!
+        this.set_process();
+        //设置本人分数标签
+        this._scoreLabel = new cc.LabelTTF('0', "HKHBJT_FONT", 46);
+        this._scoreLabel.setColor(cc.color(255,255,0));
+        this._scoreLabel.setPosition(cc.winSize.width / 2,cc.winSize.height - 210);
+        this.addChild(this._scoreLabel);
+
+        this.rankLabel = new cc.LabelTTF("排名"+people_count+"/"+people_count, "HKHBJT_FONT", 36);
+        this.rankLabel.setPosition(cc.winSize.width / 2 + 200,cc.winSize.height - 210);
+        this.addChild(this.rankLabel);
+
         this.gamingTime = game_sec;
-        this.gamingTimeLabel = new cc.LabelTTF(this.gamingTime + 's',"HKHBJT_FONT",36);
-        this.gamingTimeLabel.setFontFillColor(cc.color(234,0,0));
-        this.gamingTimeLabel.x = 600;
+        this.gamingTimeLabel = new cc.LabelTTF(this.gamingTime + 's',"HKHBJT_FONT",30);
+        this.gamingTimeLabel.setFontFillColor(cc.color(147, 193, 210));
+        this.gamingTimeLabel.x = 605;
         this.gamingTimeLabel.y = 800;
         this.addChild(this.gamingTimeLabel);
         var self = this;
@@ -230,6 +249,14 @@ var PkLayer = cc.Layer.extend({
         this.gamingTimeControl = new CountDownTimeControl(1,game_sec,function () {
             self.gamingTime -=1;
             self.gamingTimeLabel.setString(self.gamingTime + 's');
+
+            if(self.gamingTime>=0){
+                self.process.mvd.runAction(cc.moveBy(1,-8.25,0));
+            }
+
+            if(self.gamingTime <= 10){
+                self.gamingTimeLabel.setFontFillColor(cc.color(234,0,0));
+            }
         },function(){this.cleanUp();});
 
         var pr3 = new cc.Sprite("#prestart_3.png");
@@ -276,9 +303,43 @@ var PkLayer = cc.Layer.extend({
         pr1.runAction(cc.sequence(cc.delayTime(3),cc.spawn(new cc.ScaleTo(0.1, 1),cc.fadeIn(0.1)),cc.fadeOut(0.9)));
         pr_go.runAction(cc.sequence(cc.delayTime(4),cc.spawn(new cc.ScaleTo(0.1, 1.5),cc.fadeIn(0.1)),cc.fadeOut(0.9),callFunc));
 
+
+        var t_control = new CountDownTimeControl(0.1,60,function () {
+            self.pr_count ++;
+            //cc.log("pr_count",self.pr_count);
+
+            var dist = Math.ceil(self.pr_count*51/60);
+            var rect = self.process.top.getTextureRect();
+            self.process.top.setTextureRect(cc.rect(rect.x,rect.y,510-dist,30));
+        },function(){this.cleanUp();});
+
         this.runAction(cc.sequence(cc.delayTime(4),cc.callFunc(function () {
             self.gamingTimeControl.startCountDownTime();
+            t_control.startCountDownTime();
         }.bind(self))));
+    },
+    set_process : function () {
+        this.process = new cc.Sprite();
+
+        var bot  = new cc.Sprite("#progress_bot.png");
+        bot.setPosition(cc.winSize.width/2,800);
+        this.addChild(bot,10000);
+
+        var top  = new cc.Sprite("#progress_top.png");
+        top.setPosition(64,785);
+        top.setAnchorPoint(0,0);
+        this.addChild(top,10001);
+        var rect = top.getTextureRect();
+        //top.setTextureRect(cc.rect(rect.x,rect.y,493,30));
+
+
+        var mvd = new cc.Sprite("#progress_icon.png");
+        mvd.setPosition(640-75,800);
+        this.addChild(mvd,10002);
+        //cc.log(mvd.getContentSize());
+        this.process.bot = bot;
+        this.process.top = top;
+        this.process.mvd = mvd;
     },
     send_diy_data : function (data,action) {
         return "{\"command\":\"message\",\"identifier\":\"{\\\"channel\\\":\\\"PkaChannel\\\"}\",\"data\":\"{\\\"data\\\":\\\""+data+"\\\",\\\"action\\\":\\\""+action+"\\\"}\"}";

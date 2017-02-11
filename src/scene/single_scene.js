@@ -44,7 +44,7 @@ var MainLayer = cc.Layer.extend({
         this.levelLabel.x = size.width / 2;
         this.levelLabel.y = size.height - size.height / 10 + 65;
         this.addChild(this.levelLabel);
-        this.xmxx = new XmxxGame(this, res.Bg, undefined);
+        this.xmxx = new XmxxGame(this, res.Bg, undefined,cc.winSize.height - 136);
         //this.addChild(this.xmxx);
 
 
@@ -121,8 +121,16 @@ var MainLayer = cc.Layer.extend({
 
         //清除粒子效果
         for(var xxx =0;xxx<this.xmxx.particless.length;xxx++){
-            this.xmxx.particless[xxx].removeFromParent();
-            this.xmxx.particless[xxx] = null;
+            try {
+                if (this.xmxx.particless[xxx] != null && this.xmxx.particless[xxx] != undefined) {
+                    this.xmxx.particless[xxx].removeFromParent();
+                    this.xmxx.particless[xxx] = null;
+                }
+            }catch(e){
+                cc.log("有异常1:",this.xmxx.particless);
+                cc.log("有异常2:",xxx);
+            }
+
         }
         this.xmxx.particless = [];
     },

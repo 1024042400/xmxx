@@ -20,13 +20,15 @@ var XmxxGame = cc.Node.extend({
     particle :null, // 粒子效果
     particleCount : 0, // 粒子效果个数,手机端每次最多6个,考虑性能
     particless:[],
-    ctor:function (parent,res_bg,data) {
+    parent_score_y : 0, // 分数y坐标
+    ctor:function (parent,res_bg,data,parent_score_y) {
         this._super();
         this.diy_parent = parent;
         this.self = this;
         this.loadBackground(res_bg);
         this.init_data(data);
         this.createBody();
+        this.parent_score_y = parent_score_y;
         return true;
     },
     loadBackground : function (res_bg) {
@@ -197,19 +199,20 @@ var XmxxGame = cc.Node.extend({
                         var selectLabel = new cc.LabelTTF(p.add_score,"HKHBJT_FONT",40);
                         selectLabel.setPosition(target.x,target.y+100);
                         p.diy_parent.addChild(selectLabel,1010);
+
                         selectLabel.runAction(cc.sequence(
-                            cc.moveBy(0.2,0,50),cc.delayTime(0.3),cc.moveTo(0.4,cc.winSize.width/2,cc.winSize.height - 136),cc.delayTime(0.1),cc.spawn(new cc.ScaleTo(0.3,0.5),cc.fadeOut(0.5)),cc.delayTime(0.1),
+                            cc.moveBy(0.2,0,50),cc.delayTime(0.3),cc.moveTo(0.4,cc.winSize.width/2,p.parent_score_y),cc.delayTime(0.1),cc.spawn(new cc.ScaleTo(0.3,0.5),cc.fadeOut(0.5)),cc.delayTime(0.1),
                             cc.callFunc(function () {p.diy_parent.after_remove();selectLabel.removeFromParent();}.bind(p.diy_parent))));
 
                         p.selectLabelStatus = 1;
                         p.selectLabel.runAction(cc.sequence(cc.delayTime(4),cc.callFunc(function () {
                             if(p.selectLabelStatus == 1) {
-                                //p.selectLabel.runAction(cc.fadeOut(1));
                             }
                         })));
 
                         p.score += p.add_score; // 注意顺序.
-                        p.diy_parent.judge_pass_level();
+
+                        if(p.diy_parent.judge_pass_level) p.diy_parent.judge_pass_level();
 
                         if(p.selected.length >=6){ // 太棒了! 哦买噶!  等等
                             //var sprite_str = "";
@@ -234,6 +237,7 @@ var XmxxGame = cc.Node.extend({
 
                         p.selected.splice(0,p.selected.length); // 清除数组
                         p.is_over();
+                        if(p.diy_parent.send_upscore) p.diy_parent.send_upscore(); // 最后发送分数
                         //p.diy_parent.after_remove();
                     }else{
                         p.replace_sprites();
