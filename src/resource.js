@@ -21,5 +21,6 @@ for (var i in res) {
 
 
 var xx_global_config = {
-    IsPlayMusic  : true
+    IsPlayMusic  : true,
+    IsBoom : true
 };

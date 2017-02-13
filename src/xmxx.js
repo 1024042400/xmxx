@@ -181,13 +181,15 @@ var XmxxGame = cc.Node.extend({
                             cell.removeFromParent(true);
                             p.cells[parseInt((pos - 1) / 10)][(pos - 1) % 10] = 0;
 
-                            if(cc.sys.isMobile && p.particleCount > 6) {
-                            }else{
-                                p.particleCount ++;
-                                var par = p.particle.clone();
-                                par.setPosition(cc.p(32 + parseInt((pos - 1) % 10) * 64, 640 - 32 - parseInt((pos - 1) / 10) * 64));
-                                p.diy_parent.addChild(par);
-                                p.particless[p.particless.length] = par;
+                            if(xx_global_config.IsBoom) {
+                                if (cc.sys.isMobile && p.particleCount > 6) {
+                                } else {
+                                    p.particleCount++;
+                                    var par = p.particle.clone();
+                                    par.setPosition(cc.p(32 + parseInt((pos - 1) % 10) * 64, 640 - 32 - parseInt((pos - 1) / 10) * 64));
+                                    p.diy_parent.addChild(par);
+                                    p.particless[p.particless.length] = par;
+                                }
                             }
                         }
 
@@ -399,12 +401,16 @@ var XmxxGame = cc.Node.extend({
                     this.cells[i][j] = 0;
                 }
             }
-            for(var x = 0;x<arr.length;x++){
-                var par = this.particle.clone();
-                var pos = arr[x];
-                par.setPosition(cc.p(32 + parseInt((pos - 1) % 10) * 64, 640 - 32 - parseInt((pos - 1) / 10) * 64));
-                this.diy_parent.addChild(par);
+            // 爆炸效果
+            if(xx_global_config.IsBoom){
+                for(var x = 0;x<arr.length;x++){
+                    var par = this.particle.clone();
+                    var pos = arr[x];
+                    par.setPosition(cc.p(32 + parseInt((pos - 1) % 10) * 64, 640 - 32 - parseInt((pos - 1) / 10) * 64));
+                    this.diy_parent.addChild(par);
+                }
             }
+
             if(this.diy_parent.next_level) { // 下一关
                 this.diy_parent.next_level();//this.diy_parent.runAction(cc.sequence(cc.delayTime(1),
             }

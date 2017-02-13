@@ -62,7 +62,15 @@ var HallLayer = cc.Layer.extend({
         this.addChild(pkLabel);
     },
     single_event : function () {
-        cc.director.runScene(new cc.TransitionMoveInR(0.8, new MainScene()));//TransitionFade
+        if(cc.sys.isMobile){
+            this.runAction(cc.sequence(cc.delayTime(0.2),cc.callFunc(function () {
+                cc.director.runScene(new cc.TransitionFade(0.5, new MainScene()));//TransitionMoveInR
+            })));
+        }else{
+            cc.director.runScene(new cc.TransitionFade(0.5, new MainScene()));//
+        }
+
+
     },
     pk_event : function () {
         cc.director.runScene(new cc.TransitionMoveInB(0.6,new PkScene()));

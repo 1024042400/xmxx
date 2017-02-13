@@ -72,6 +72,9 @@ cc.game.onStart = function(){
     // The game will be resized when browser size change
     cc.view.resizeWithBrowserSize(true);
 
+    if(cc.sys.isMobile){
+        xx_global_config.IsBoom = false;
+    }
 
     //load resources
     cc.LoaderScene.preload(g_resources, function () {
