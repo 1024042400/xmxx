@@ -13,10 +13,10 @@ var OverLayer = cc.Layer.extend({
         over_bg.setPosition(cc.winSize.width / 2,cc.winSize.height / 2+50);
         this.addChild(over_bg,-50);
 
+        // 比赛结果
         for(var i=0;i<players.length;i++){ //
             this.create_over_labels(over_bg,JSON.parse(players[i]),i,pid);
         }
-
 
         // 再来一局
         var button_blue = new cc.Sprite("#button_blue.png");
@@ -52,18 +52,24 @@ var OverLayer = cc.Layer.extend({
             color = cc.color(0xE0,0xE5,0xE0,60);
         }
 
+        var pos_y = 420-i*70;
         var rankLabel = new cc.LabelTTF(player.rank,"Arial",30);//
-        rankLabel.setPosition(80,420-i*70);
+        rankLabel.setPosition(60,pos_y);
         rankLabel.setFontFillColor(color);
         bg.addChild(rankLabel);
 
+        var idLabel = new cc.LabelTTF(player.pid,"Arial",30);//
+        idLabel.setPosition(180,420-i*70);
+        idLabel.setFontFillColor(color);
+        bg.addChild(idLabel);
+
         var scoreLabel = new cc.LabelTTF(player.score + "分","Arial",30);//
-        scoreLabel.setPosition(280,420-i*70);
+        scoreLabel.setPosition(350,pos_y);
         scoreLabel.setFontFillColor(color);
         bg.addChild(scoreLabel);
 
         var goinLabel = new cc.LabelTTF(player.dami + "金币","Arial",30);//
-        goinLabel.setPosition(500,420-i*70);
+        goinLabel.setPosition(500,pos_y);
         goinLabel.setFontFillColor(color);
         bg.addChild(goinLabel);
     }
@@ -77,7 +83,7 @@ var OverScene = cc.Scene.extend({
         return true;
     },
     onEnter:function () {
-        this._super();
+        this._super(); //这里很要初始化父类
         this.addChild(this.overLayer);
     }
 });

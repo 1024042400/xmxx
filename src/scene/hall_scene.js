@@ -18,10 +18,16 @@ var HallLayer = cc.Layer.extend({
         this.xx_pk();
         //this.can_touch = true;
 
-        //var arr = new Array(2);
-        //arr[0] =   "{\"id\":5577664,\"pid\":5084,\"score\":1925,\"rank\":1,\"dami\":200,\"join_ts\":\"1486557119.578202\",\"add_star\":0,\"name\":\"游客5084\",\"logo\":null,\"star\":0,\"gold\":1900}";
-        //arr[1] =   "{\"id\":5577664,\"pid\":5086,\"score\":19256,\"rank\":2,\"dami\":100,\"join_ts\":\"1486557119.578202\",\"add_star\":0,\"name\":\"游客5084\",\"logo\":null,\"star\":0,\"gold\":1900}";
-        //cc.director.runScene(new cc.TransitionFade(1,new OverScene(arr)));
+        /*
+        var arr = new Array(2);
+        arr[0] =   "{\"id\":5577664,\"pid\":8236979,\"score\":1925,\"rank\":1,\"dami\":200,\"join_ts\":\"1486557119.578202\",\"add_star\":0,\"name\":\"游客5084\",\"logo\":null,\"star\":0,\"gold\":1900}";
+        arr[1] =   "{\"id\":5577664,\"pid\":1234567,\"score\":19256,\"rank\":2,\"dami\":100,\"join_ts\":\"1486557119.578202\",\"add_star\":0,\"name\":\"游客5084\",\"logo\":null,\"star\":0,\"gold\":1900}";
+        arr[2] =   "{\"id\":5577664,\"pid\":1234567,\"score\":19256,\"rank\":2,\"dami\":100,\"join_ts\":\"1486557119.578202\",\"add_star\":0,\"name\":\"游客5084\",\"logo\":null,\"star\":0,\"gold\":1900}";
+        arr[3] =   "{\"id\":5577664,\"pid\":1234567,\"score\":19256,\"rank\":2,\"dami\":100,\"join_ts\":\"1486557119.578202\",\"add_star\":0,\"name\":\"游客5084\",\"logo\":null,\"star\":0,\"gold\":1900}";
+        arr[4] =   "{\"id\":5577664,\"pid\":1234567,\"score\":19256,\"rank\":2,\"dami\":100,\"join_ts\":\"1486557119.578202\",\"add_star\":0,\"name\":\"游客5084\",\"logo\":null,\"star\":0,\"gold\":1900}";
+        arr[5] =   "{\"id\":5577664,\"pid\":1234567,\"score\":19256,\"rank\":2,\"dami\":100,\"join_ts\":\"1486557119.578202\",\"add_star\":0,\"name\":\"游客5084\",\"logo\":null,\"star\":0,\"gold\":1900}";
+        cc.director.runScene(new cc.TransitionFade(1,new OverScene(arr)));
+        */
     },
     xx_practice : function () {
         // 1.图标
