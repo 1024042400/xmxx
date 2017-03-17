@@ -53,34 +53,35 @@
  */
 
 cc.game.onStart = function(){
-    if(!cc.sys.isNative && document.getElementById("cocosLoading")) //If referenced loading.js, please remove it
-        document.body.removeChild(document.getElementById("cocosLoading"));
+    //if(!cc.sys.isNative && document.getElementById("cocosLoading")) //If referenced loading.js, please remove it
+        //document.body.removeChild(document.getElementById("cocosLoading"));
 
-    cc.view.enableAutoFullScreen(false);
+    //cc.view.enableAutoFullScreen(false);
     // Pass true to enable retina display, on Android disabled by default to improve performance
-    cc.view.enableRetina(cc.sys.os === cc.sys.OS_IOS ? true : false);
+    cc.view.enableRetina(true);
+    //cc.view.enableRetina(cc.sys.os === cc.sys.OS_IOS ? true : false);
 
     // Adjust viewport meta
     cc.view.adjustViewPort(true);
 
     // Uncomment the following line to set a fixed orientation for your game
-    // cc.view.setOrientation(cc.ORIENTATION_PORTRAIT);
+    cc.view.setOrientation(cc.ORIENTATION_PORTRAIT);//);
 
     // Setup the resolution policy and design resolution size
+    //cc.view.setDesignResolutionSize(640, 960, cc.ResolutionPolicy.FIXED_WIDTH); //cc.ResolutionPolicy.SHOW_ALL
+    cc.view.enableAutoFullScreen(false);
     cc.view.setDesignResolutionSize(640, 960, cc.ResolutionPolicy.SHOW_ALL);
 
     // The game will be resized when browser size change
     cc.view.resizeWithBrowserSize(true);
 
-    if(cc.sys.isMobile){
-        xx_global_config.IsBoom = false;
-    }
+    xx_global_config.IsBoom = false;
 
     //load resources
     cc.LoaderScene.preload(g_resources, function () {
-        cc.spriteFrameCache.addSpriteFrames(res.PkPlist,cc.textureCache.addImage(res.PkPng));
         cc.spriteFrameCache.addSpriteFrames(res.NewActsPlist, cc.textureCache.addImage(res.NewActsPng));
-        cc.director.runScene(new HallScene());
+        cc.spriteFrameCache.addSpriteFrames(res.SharePlist, cc.textureCache.addImage(res.SharePng));
+        cc.director.runScene(new ShareScene());
     }, this);
 };
 cc.game.run();

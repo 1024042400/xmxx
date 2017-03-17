@@ -5,21 +5,18 @@ var XmxxGame = cc.Node.extend({
     _className : "XmxxGame",
     diy_parent : null,
     self   : null,
-    body   : null, // body
-    data : [],//[[5, 1, 1, 1, 4, 2, 5, 5, 2, 5], [2, 5, 4, 1, 1, 4, 4, 5, 2, 2], [4, 2, 3, 1, 5, 1, 1, 2, 1, 3], [1, 5, 1, 4, 1, 5, 5, 2, 3, 3], [2, 2, 5, 5, 4, 4, 2, 2, 5, 3], [4, 2, 2, 5, 4, 1, 1, 2, 1, 4], [3, 5, 2, 4, 5, 1, 2, 1, 3, 1], [4, 3, 1, 2, 2, 5, 4, 3, 4, 2], [4, 5, 4, 1, 1, 1, 1, 2, 2, 5], [3, 2, 3, 3, 4, 1, 3, 2, 1, 5]],cells
+    body   : null,
+    data : [],
     cells :[],
     selected :[],
     visited : [],
     score : 0,
     add_score : 0,
-    selectLabel: '',  // 8连消320分
-    selectLabelStatus : 0,
+    scoreLabel : null,
+    selectLabel: null,
     leftLabel : null, // 剩余0个星星
     awardLabel: null, // 奖励2000分
     game_is_over : false, // 游戏是否结束标志
-    particle :null, // 粒子效果
-    particleCount : 0, // 粒子效果个数,手机端每次最多6个,考虑性能
-    particless:[],
     parent_score_y : 0, // 分数y坐标
     ctor:function (parent,res_bg,data,parent_score_y) {
         this._super();
@@ -61,19 +58,24 @@ var XmxxGame = cc.Node.extend({
             this.visited[i] = arr;
         }
 
+        this.scoreLabel = new cc.LabelTTF('0分', "HKHBJT_FONT", 36);
+        this.scoreLabel.setColor(cc.color(254, 245, 2));
+        this.scoreLabel.x = cc.winSize.width / 2;
+        this.scoreLabel.y = 725;
+        this.addChild(this.scoreLabel,10);
+
+        this.selectLabel = new cc.LabelTTF('', "HKHBJT_FONT", 30);
+        this.selectLabel.setColor(cc.color(255, 255, 255));
+        this.selectLabel.x = cc.winSize.width / 2;
+        this.selectLabel.y = 675;
+        this.addChild(this.selectLabel,10);
+
         this.cells = [];
         this.selected = [];
         this.add_score = 0;
         if(clear_score) {this.score = 0;}
         this.game_is_over = false;
-        this.particle = new cc.ParticleSystem(res.Particle);
 
-        this.selectLabel = new cc.LabelTTF('',"Arial",38);
-        this.selectLabel.setPosition(cc.winSize.width/2,680);
-        this.diy_parent.addChild(this.selectLabel);
-        this.selectLabelStatus = 0;
-
-        this.particleCount = 0;
         this.diy_parent.sub_init_data();
     },
     createBody : function(){
@@ -95,16 +97,16 @@ var XmxxGame = cc.Node.extend({
                 node.value = this.data[i][j];
                 node.setPosition(j * (size.width/10) + parseInt(0.5*node.width),size.width - (i * size.width / 10 + parseInt(node.height / 2)));
                 node.setLocalZOrder(9);
+
                 node.id = i * 10 + j + 1;
                 node.pos = node.id;
                 node.setTag(node.value);
                 var sca = Math.random()-0.2;
                 if(sca<0)  sca= Math.random();
                 node.setScale(sca);
-                node.runAction(new cc.ScaleTo(0.4+Math.random(), 1)); //0.4+Math.random()秒,从小变到大,1为100%
+                node.runAction(new cc.ScaleTo(Math.random(), 1)); //0.4+Math.random()秒,从小变到大,1为100%
 
                 batchNode.addChild(node);
-                //body.addChild(node);
                 arr[j] = node;
             }
             this.cells[i] = arr;
@@ -124,9 +126,6 @@ var XmxxGame = cc.Node.extend({
             this.replace_sprites(); // 替换图片
             this.selectLabel.setString(this.selected.length+'连消'+5*this.selected.length*this.selected.length+'分');
             if(cc.loader.getRes(res.Select) && xx_global_config.IsPlayMusic) {cc.audioEngine.playMusic(res.Select,false);}
-
-            this.selectLabelStatus = 0;
-            this.selectLabel.runAction(cc.fadeIn(0.001));
         }
     },
     deep_search : function(x,y){
@@ -174,73 +173,23 @@ var XmxxGame = cc.Node.extend({
                     if(p.selected.indexOf(target.pos) != -1){
                         p.add_score = p.selected.length * p.selected.length * 5;
 
-                         // 粒子效果
                         for(var i=0;i<p.selected.length;i++) {
                             var pos = p.selected[i];
                             var cell = p.cells[parseInt((pos - 1) / 10)][(pos - 1) % 10];
                             cell.removeFromParent(true);
                             p.cells[parseInt((pos - 1) / 10)][(pos - 1) % 10] = 0;
 
-                            if(xx_global_config.IsBoom) {
-                                if (cc.sys.isMobile && p.particleCount > 6) {
-                                } else {
-                                    p.particleCount++;
-                                    var par = p.particle.clone();
-                                    par.setPosition(cc.p(32 + parseInt((pos - 1) % 10) * 64, 640 - 32 - parseInt((pos - 1) / 10) * 64));
-                                    p.diy_parent.addChild(par);
-                                    p.particless[p.particless.length] = par;
-                                }
-                            }
                         }
+                        p.score += p.add_score;
+                        p.scoreLabel.setString(p.score+'分');
 
-                        p.particleCount = 0;
                         p.drop_down();
                         p.move_left();
                         if(cc.loader.getRes(res.Pop) && xx_global_config.IsPlayMusic){ cc.audioEngine.playMusic(res.Pop,false);}
 
-                        var selectLabel = new cc.LabelTTF(p.add_score,"HKHBJT_FONT",40);
-                        selectLabel.setPosition(target.x,target.y+100);
-                        p.diy_parent.addChild(selectLabel,1010);
-
-                        selectLabel.runAction(cc.sequence(
-                            cc.moveBy(0.2,0,50),cc.delayTime(0.3),cc.moveTo(0.4,cc.winSize.width/2,p.parent_score_y),cc.delayTime(0.1),cc.spawn(new cc.ScaleTo(0.3,0.5),cc.fadeOut(0.5)),cc.delayTime(0.1),
-                            cc.callFunc(function () {p.diy_parent.after_remove();selectLabel.removeFromParent();}.bind(p.diy_parent))));
-
-                        p.selectLabelStatus = 1;
-                        p.selectLabel.runAction(cc.sequence(cc.delayTime(4),cc.callFunc(function () {
-                            if(p.selectLabelStatus == 1) {
-                            }
-                        })));
-
-                        p.score += p.add_score; // 注意顺序.
-
-                        if(p.diy_parent.judge_pass_level) p.diy_parent.judge_pass_level();
-
-                        if(p.selected.length >=6){ // 太棒了! 哦买噶!  等等
-                            //var sprite_str = "";
-                            if(cc.loader.getRes(res.Praise) && xx_global_config.IsPlayMusic) {cc.audioEngine.playMusic(res.Praise,false);}
-                            if(p.selected.length < 20){
-                                var sprite_str = "#praise_"+parseInt(1+Math.random()*3)+".png";
-                            }else if(p.selected.length < 25){
-                                var sprite_str = "#praise_4.png";
-                            }else {
-                                var sprite_str = "#praise_5.png";
-                            }
-                            var praise = new cc.Sprite(sprite_str);//""
-                            praise.setPosition(cc.winSize.width / 2,cc.winSize.height / 2 + 120);
-                            praise.setScale(3);
-                            p.diy_parent.addChild(praise,10000);
-
-                            var callFunc = cc.callFunc(function () {
-                                praise.removeFromParent();
-                            }.bind(p.diy_parent));
-                            praise.runAction(cc.sequence(new cc.ScaleTo(0.3,2),cc.fadeOut(0.5),cc.fadeIn(0.5),cc.fadeOut(0.5),callFunc));
-                        }
-
                         p.selected.splice(0,p.selected.length); // 清除数组
+                        if(p.diy_parent.after_remove) p.diy_parent.after_remove();
                         p.is_over();
-                        if(p.diy_parent.send_upscore) p.diy_parent.send_upscore(); // 最后发送分数
-                        //p.diy_parent.after_remove();
                     }else{
                         p.replace_sprites();
                         p.selected.splice(0,p.selected.length);
@@ -264,7 +213,7 @@ var XmxxGame = cc.Node.extend({
     },
     jump : function(){
         if(this.selected.length == 0) {return false;}
-        var jump = cc.jumpBy(0.3, cc.p(0, 0), 20, 1);// 原地跳20px,共跳一次.
+        var jump = cc.jumpBy(0.2, cc.p(0, 0), 20, 1);// 原地跳20px,共跳一次.
         for(var i=0;i<this.selected.length;i++){
             var pos = this.selected[i];
             var cell = this.cells[parseInt((pos-1)/10)][(pos-1)%10];
@@ -352,6 +301,7 @@ var XmxxGame = cc.Node.extend({
             this.add_score += left_score;
         }
 
+        this.scoreLabel.setString(this.score+'分');
         var label1 = new cc.LabelTTF("奖励" + left_score, "Arial", 40);
         label1.x = cc.winSize.width / 2;
         label1.y = 480;
@@ -366,20 +316,6 @@ var XmxxGame = cc.Node.extend({
 
         this.diy_parent.deal_with_over(left_score,count,this.score);
 
-        //cc.audioEngine.playMusic(res.Passed,false);
-    },
-    print : function () { // 测试使用,打印星星阵列
-        for(var i=0;i<10;i++){
-            var str = '[';
-            if(this.cells[i][0] != 0){str+=this.cells[i][0].value+',';if(this.cells[i][0].pos<10)str+='0'; str+=this.cells[i][0].pos+']'}
-            else {str+='0,00]'}
-            for(var j=1;j<10;j++){
-                str+=',[';
-                if(this.cells[i][j] != 0){str+=this.cells[i][j].value+',';if(this.cells[i][j].pos<10)str+='0';str+=this.cells[i][j].pos+']'}
-                else{str+='0,00]';}
-            }
-            console.log(str);
-        }
     },
     all_blink : function () { // 结束后闪烁动作
         var blink = cc.blink(1,10);
@@ -401,21 +337,7 @@ var XmxxGame = cc.Node.extend({
                     this.cells[i][j] = 0;
                 }
             }
-            // 爆炸效果
-            if(xx_global_config.IsBoom){
-                for(var x = 0;x<arr.length;x++){
-                    var par = this.particle.clone();
-                    var pos = arr[x];
-                    par.setPosition(cc.p(32 + parseInt((pos - 1) % 10) * 64, 640 - 32 - parseInt((pos - 1) / 10) * 64));
-                    this.diy_parent.addChild(par);
-                }
-            }
-
-            if(this.diy_parent.next_level) { // 下一关
-                this.diy_parent.next_level();//this.diy_parent.runAction(cc.sequence(cc.delayTime(1),
-            }
         }.bind(this));
         this.diy_parent.runAction(cc.sequence(cc.delayTime(1),callFunc));
-        //this.diy_parent.runAction(cc.sequence(cc.delayTime(1),callFunc));
     }
 });

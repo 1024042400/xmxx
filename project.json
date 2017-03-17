@@ -1,6 +1,5 @@
 {
     "project_type": "javascript",
-
     "debugMode" : 1,
     "showFPS" : false,
     "frameRate" : 60,
@@ -8,23 +7,13 @@
     "id" : "gameCanvas",
     "renderMode" : 0,
     "engineDir":"frameworks/cocos2d-html5",
-
     "modules" : ["cocos2d"],
-
     "jsList" : [
         "src/resource.js",
-
         "src/tools/xxtea.js",
         "src/tools/diy_method.js",
         "src/tools/time_count.js",
-
-        "src/layer/dialog_layer.js",
-        "src/scene/hall_scene.js",
-        "src/scene/single_scene.js",
-        "src/scene/pk_scene.js",
-        "src/scene/over_scene.js",
-
+        "src/scene/share_scene.js",
         "src/xmxx.js"
-
     ]
 }

@@ -173,11 +173,7 @@
                 <file name="src/tools/xxtea.js"/>
                 <file name="src/tools/diy_method.js"/>
                 <file name="src/tools/time_count.js"/>
-                <file name="src/layer/dialog_layer.js"/>
-                <file name="src/scene/hall_scene.js"/>
-                <file name="src/scene/single_scene.js"/>
-                <file name="src/scene/pk_scene.js"/>
-                <file name="src/scene/over_scene.js"/>
+                <file name="src/scene/share_scene.js"/>
                 <file name="src/xmxx.js"/>
                 <file name="main.js"/>
 

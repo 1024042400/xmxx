@@ -2602,7 +2602,7 @@ cc.game = /** @lends cc.game# */{
                 cc.loader.loadTxt(_src, loaded);
             }
             if (!txt) {
-                cc.loader.loadTxt("project.json", loaded);
+                //cc.loader.loadTxt("project.json", loaded);
             }
         }
     },
@@ -2668,6 +2668,8 @@ cc.game = /** @lends cc.game# */{
         this.frame = (localContainer.parentNode === document.body) ? document.documentElement : localContainer.parentNode;
 
         localCanvas.addClass("gameCanvas");
+        //var context = localCanvas.getContext('2d');
+        //context.fillStyle = 'rgba(255, 255, 255, 0)';
         localCanvas.setAttribute("width", width || 480);
         localCanvas.setAttribute("height", height || 320);
         localCanvas.setAttribute("tabindex", 99);

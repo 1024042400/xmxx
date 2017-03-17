@@ -30,7 +30,7 @@
  * @example
  *
  * if(cc.sys.isNative) {
- *     cc.log(cc.fileUtils.fullPathForFilename("test.js"));
+ *     cc.log(cc.fileUtils.fullPathForFilename("test.sh"));
  * }
  */
 var jsb = jsb || {};
